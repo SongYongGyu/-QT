@@ -1,0 +1,32 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>매일 성경 QT | 말씀 보관함</title><style>
+:root{color-scheme:light;--ink:#203044;--blue:#2466a5;--bg:#f3f6fa;--line:#dce4ed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;line-height:1.8}
+header{background:linear-gradient(120deg,#193d61,#2c7190);color:white;padding:38px max(20px,calc((100vw - 900px)/2)) 32px}
+h1{font-size:clamp(1.6rem,4vw,2.2rem);margin:0 0 8px}header p{margin:4px 0;color:#e4f2fb}
+main{max-width:940px;margin:auto;padding:24px 18px 80px}.tools{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+button,input{font:inherit}button{border:1px solid #b8cddd;background:white;color:#204764;border-radius:10px;padding:8px 13px;cursor:pointer}button:hover{background:#edf6fc}
+input{min-width:220px;flex:1;border:1px solid #b8cddd;border-radius:10px;padding:9px 12px}
+.day{background:white;border:1px solid var(--line);border-radius:15px;margin:13px 0;box-shadow:0 3px 13px #24344d0b;overflow:hidden}
+summary{cursor:pointer;display:flex;align-items:center;gap:13px;padding:17px 20px;list-style:none}summary::-webkit-details-marker{display:none}
+.badge{flex:none;border-radius:8px;background:#e6f1fa;color:#235b8e;padding:4px 10px;font-weight:800}
+.sumtext{flex:1}.sumtext b,.sumtext small{display:block}.sumtext small{font-size:.91rem;color:#67798b}
+.chevron{font-size:1.3rem;color:#5986a7;transition:transform .2s}.day[open] .chevron{transform:rotate(180deg)}
+.body{border-top:1px solid var(--line);padding:12px 24px 27px}.entry{max-width:780px;margin:auto}.entry h3{margin:30px 0 12px;padding:9px 14px;border-left:4px solid #4b8fbf;background:#f0f7fc;font-size:1.15rem}.entry h4{font-size:1.05rem;margin:21px 0 7px}.entry p{margin:8px 0 13px}.entry blockquote{margin:16px 0;padding:12px 18px;background:#eef7f6;border-left:4px solid #4c9b8c;font-weight:650}
+.notice{font-size:.86rem;background:#fff8e8;border:1px solid #efdeb4;border-radius:9px;padding:12px;margin:12px 0 24px;color:#73571f}
+.editbox{border-top:1px dashed var(--line);margin-top:26px;padding-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+footer{font-size:.88rem;color:#6d7b89;margin-top:28px}.modal{position:fixed;inset:0;background:#15283bcc;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal.show{display:flex}.dialog{background:white;border-radius:16px;width:min(800px,100%);padding:24px;max-height:95vh;overflow:auto}.dialog h2{margin:0 0 8px}
+textarea{width:100%;height:52vh;border:1px solid #aabacb;border-radius:9px;padding:12px;font:15px/1.7 system-ui;resize:vertical}.dialog-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+@media(max-width:600px){header{padding:28px 18px}.body{padding:10px 15px 24px}summary{padding:13px 12px;gap:9px}.sumtext b{font-size:.9rem}.sumtext small{font-size:.82rem}}
+@media print{header{color:black;background:white}.tools,.editbox,.notice{display:none}.day{break-inside:avoid}}
+
+#status{padding:11px 15px;background:#e8f3fc;border-radius:10px;margin:10px 0 20px;color:#244e70}#status.error{background:#fff1ec;color:#8a3b25}.entry{overflow-wrap:anywhere}
+</style></head><body><header><h1>📖 매일 성경 QT 보관함</h1><p>창세기부터 차근차근 이어가는 말씀 묵상</p><p id="subtitle">말씀을 불러오는 중입니다.</p></header><main><div class="tools"><input id="search" type="search" placeholder="날짜 · 성경 범위 · 제목 · 본문 검색" aria-label="QT 검색"><button id="openall">모두 펼치기</button><button id="closeall">모두 접기</button><button id="reload">최신 내용 확인</button></div><div id="status" role="status">보관함을 불러오는 중입니다.</div><div id="days"></div><footer>이 보관함은 같은 주소에서 최신 내용을 불러옵니다. 새로운 QT가 추가되려면 관리자가 qt-data.json에 내용을 등록해야 합니다.</footer></main><script>
+const host=document.getElementById('days'),status=document.getElementById('status'),q=document.getElementById('search');let all=[];
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function render(){const term=q.value.trim().toLocaleLowerCase();host.innerHTML='';let count=0;for(const d of all){const text=[d.date,d.verse,d.title,d.content_html.replace(/<[^>]*>/g,' ')].join(' ').toLocaleLowerCase();if(term&&!text.includes(term))continue;count++;const node=document.createElement('details');node.className='day';node.id='day'+d.day;const summ=document.createElement('summary');summ.innerHTML='<span class="badge">'+esc(d.day)+'일차</span><span class="sumtext"><b>'+esc(d.date)+' · '+esc(d.verse)+'</b><small>'+esc(d.title)+'</small></span><span class="chevron">▾</span>';const body=document.createElement('div');body.className='body';const entry=document.createElement('div');entry.className='entry';entry.innerHTML=d.content_html;body.append(entry);node.append(summ,body);host.append(node);}if(!count)status.textContent='검색 결과가 없습니다.';else status.textContent='총 '+all.length+'일차 보관 중 · '+count+'개 표시';}
+async function load(){status.classList.remove('error');status.textContent='최신 QT를 확인하고 있습니다.';try{const response=await fetch('./qt-data.json?v='+Date.now(),{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();if(!Array.isArray(data.days))throw new Error('데이터 형식 오류');all=data.days;all.sort((a,b)=>a.day-b.day);document.getElementById('subtitle').textContent=all.length+'일차까지 수록 · 마지막 갱신 '+(data.updated||'확인 중');render();}catch(err){status.classList.add('error');status.textContent='내용을 불러오지 못했습니다. 이 파일은 웹서버에서 열어야 합니다. GitHub Pages에 배포한 뒤 접속해 주세요. ('+err.message+')';}}
+document.getElementById('openall').onclick=()=>document.querySelectorAll('details.day').forEach(x=>x.open=true);
+document.getElementById('closeall').onclick=()=>document.querySelectorAll('details.day').forEach(x=>x.open=false);
+document.getElementById('reload').onclick=load;q.addEventListener('input',render);load();
+</script></body></html>
